@@ -1,1 +1,6 @@
 tasm/*
+uebungen/*
+*.EXE
+*.OBJ
+*.MAP
+*.TR
