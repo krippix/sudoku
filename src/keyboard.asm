@@ -1,9 +1,13 @@
-print_keyboard proc
+handle_keyboard proc
     ; load keyboard buffer
     mov ah, 01h
     int 16h
     jz @@return ; check if not awaiting read
-    
+
+    ; check if pressed key is esc
+    cmp al, 1Bh
+    jz @@escape
+
     ; read key and remove from buffer
     mov ah, 00h
     int 16h
@@ -15,4 +19,11 @@ print_keyboard proc
 
     @@return:
     ret
-print_keyboard endp
+
+    ; on esc: clear buffer and jmp to exit
+    @@escape:
+    mov ah, 00h 
+    int 16h
+    jmp exit
+
+handle_keyboard endp

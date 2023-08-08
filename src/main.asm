@@ -4,7 +4,7 @@
 LOCALS @@
 
 .DATA
-; 8th bit is true if field is static
+; 8th bit is true if number is predetermined
 ; bits 0-4 for the number within the field, 0 = empty
 fields db 81 dup (0)
 videomode db 00h
@@ -12,6 +12,7 @@ videomode db 00h
 .CODE
     include keyboard.asm
     include video.asm
+
 start:
     mov ax, @data
     mov ds, ax ; move to datasegment register
@@ -19,8 +20,8 @@ start:
     call prep_video
 
 mainloop:
-    call print_keyboard
-    mov ax, 0
+    call handle_keyboard
+    call draw_grid
     jmp mainloop
 
 exit:
