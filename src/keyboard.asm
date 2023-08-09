@@ -1,6 +1,8 @@
 handle_keyboard proc
+    push ax
+
     ; load keyboard buffer
-    mov ah, 01h
+    mov ax, 0100h
     int 16h
     jz @@return ; check if not awaiting read
 
@@ -11,13 +13,9 @@ handle_keyboard proc
     ; read key and remove from buffer
     mov ah, 00h
     int 16h
-    mov dl, al ; write read symbol to dl
-    
-    ; print read value
-    mov ah, 02h
-    int 21h
 
     @@return:
+    pop ax
     ret
 
     ; on esc: clear buffer and jmp to exit

@@ -8,8 +8,10 @@ LOCALS @@
 ; bits 0-4 for the number within the field, 0 = empty
 fields db 81 dup (0)
 videomode db 00h
+currentColor db 00h
 
 .CODE
+    ORG 100h
     include keyboard.asm
     include video.asm
 
@@ -18,10 +20,16 @@ start:
     mov ds, ax ; move to datasegment register
 
     call prep_video
+    call drawtest
+
+    mov ax, 0
+    mov bx, 10
+    mov currentColor, 4
+    call draw_char
 
 mainloop:
     call handle_keyboard
-    call draw_grid
+    ;call draw_grid
     jmp mainloop
 
 exit:
