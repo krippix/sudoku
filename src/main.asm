@@ -20,10 +20,11 @@ start:
     mov ds, ax ; move to datasegment register
 
     call prep_video
-    call drawtest
+    call draw_middle
+    call draw_grid
 
-    mov ax, 0
-    mov bx, 10
+    mov al, 31h
+    xor bx, bx
     mov currentColor, 4
     call draw_char
 

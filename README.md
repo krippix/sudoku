@@ -16,6 +16,10 @@ Assembly project written for my 4th Semester of my Computer Science Bachelors de
 | [`int 21h`](https://www.i8086.de/dos-int-21h/dos-int-21h.html)                  | etc.     |
 | [`int 33h`](https://github.com/dosasm/masm-tasm/wiki/Interrupt-list-en#int-33h) | Mouse    |
 
+### Programming notes
+
+- pixel coordinate = x + (320 * y) - 1
+
 ## Setup
 
 - requires DOSBox
