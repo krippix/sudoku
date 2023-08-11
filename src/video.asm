@@ -39,9 +39,9 @@ screen_white proc
     xor cx, cx
     xor dx, dx
 
-    mov ah, 06h    
+    mov ah, 06h
     mov dx, 184Fh
-    mov bh, 1Eh   
+    mov bh, 0fh   ; background color 
     int 10h
 
     pop dx
@@ -57,11 +57,14 @@ draw_grid PROC
     push cx ; rowloop
     push di ; pixel location
 
+    ; hide mouse
+    call mouse_hide
+
     xor bx, bx
     xor cx, cx
     xor di, di
 
-    origin = 13220 - 4*320 - 18
+    origin = 13220 - 4*320 - 18 ; origin coordinate of grid (top left)
     line_thickness = 1
     box_width = 16
     box_height = 14
@@ -144,6 +147,7 @@ draw_grid PROC
     cmp cx, 10
     jl @@mainverloop
 
+    call mouse_show
     pop di
     pop cx
     pop bx
@@ -151,11 +155,13 @@ draw_grid PROC
 draw_grid ENDP
 
 ; draws a 8x8 char from memory
-; al = ascii symbol ; 30h = 0
+; al = ascii symbol ; 30h = '0'
 ; bx = start pixel
 draw_char proc
     push cx ; loop increment
     push di ; calculates byte to load
+
+    call mouse_hide
 
     xor cx, cx
     xor di, di
@@ -183,6 +189,7 @@ draw_char proc
     cmp cx, 8
     jl @@byte_loop ; while cx < 8
 
+    call mouse_show
     pop di
     pop cx
     ret
@@ -226,9 +233,125 @@ draw_byte ENDP
 ; draws middle dot onto the canvas
 draw_middle PROC
     mov byte ptr es:[160 + 320*100 -1], 6
-    mov byte ptr es:[160 + 320*99 -1], 6
+    mov byte ptr es:[160 + 320*99  -1], 6
     mov byte ptr es:[159 + 320*100 -1], 6
-    mov byte ptr es:[159 + 320*99 -1], 6
+    mov byte ptr es:[159 + 320*99  -1], 6
 
     ret
 draw_middle ENDP
+
+; test function for measuring girdsize
+draw_gridmeasure proc
+    mov byte ptr es:[origin+1*321], 3
+    mov byte ptr es:[origin+2*321], 3
+    mov byte ptr es:[origin+3*321], 3
+    mov byte ptr es:[origin+4*321], 3
+    mov byte ptr es:[origin+5*321], 3
+    mov byte ptr es:[origin+6*321], 3
+    mov byte ptr es:[origin+7*321], 3
+    mov byte ptr es:[origin+8*321], 3
+    mov byte ptr es:[origin+9*321], 3
+    mov byte ptr es:[origin+10*321], 3
+    mov byte ptr es:[origin+11*321], 3
+    mov byte ptr es:[origin+12*321], 3
+    mov byte ptr es:[origin+13*321], 3
+    mov byte ptr es:[origin+12*321+2], 3
+    mov byte ptr es:[origin+13*321+2], 3
+    mov byte ptr es:[origin+12*321+4], 3
+    ret
+draw_gridmeasure endp
+
+; Draws box onto the screen
+; cx = box number [0-80]
+draw_box proc
+    push ax ; al = byte; ah = color
+    push bx ; stores origin of box to draw
+    push di ; used to load data from ds
+    push si ; holds calculation results
+
+    xor ax, ax
+    xor bx, bx
+    xor di, di
+    xor si, si
+
+    mov bx, origin + newline + 1 ; TODO: calculate bx!!
+
+    ; get box from ds by provided number
+    mov di, cx
+    mov al, fields[di]
+
+    ; draw background (depending on if it's selected)
+    mov ah, 0Fh      ; set color to white
+    mov si, ax
+    and si, 100000b  ; check if selected bit is set
+    cmp si, 0
+    jz @@skip_grey ; jump if not selected
+
+    mov ah, 7      ; change color to light grey
+
+    @@skip_grey:
+    call draw_box_background
+
+    ; first check if any number is set
+    xor si, si
+    mov si, ax
+    and si, 01111b
+    cmp si, 0
+    jz @@skip_number
+
+    ; determine color to use for char
+    ; predet. | wrong   | color
+    ;------------------------------
+    ;    0    |    0    | green
+    ;    0    |    1    | red
+    ;    1    |    0    | black
+    ;    1    |    1    | yellow
+    ; TODO: HIER WEITER MACHEN
+
+    ; draw the char
+    push ax
+    mov ax, 30h ; 30h is the ascii symbol 0
+    add ax, si
+    call draw_char
+    pop ax
+
+    @@skip_number:
+
+    pop si
+    pop di
+    pop bx
+    pop ax
+    ret
+draw_box endp
+
+; Simply draws a box from given origin coordinate
+; bx = coordinate
+; ah = color
+draw_box_background proc
+    push cx ; loop counter: cl = inner; ch = outer
+    push di ; coordinate for es
+
+    xor cx, cx
+    xor di, di
+
+    mov di, bx
+
+    @@draw_loop:
+    mov byte ptr es:[di], ah
+
+    inc di
+    inc cl
+    cmp cl, box_width
+    jl @@draw_loop
+    xor cl, cl
+    sub di, box_width
+
+    add di, newline
+    inc ch
+    cmp ch, box_height -1
+    jl @@draw_loop
+
+    pop di
+    pop cx
+    ret
+draw_box_background endp

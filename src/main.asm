@@ -4,29 +4,43 @@
 LOCALS @@
 
 .DATA
-; 8th bit is true if number is predetermined
-; bits 0-4 for the number within the field, 0 = empty
+; Array of bytes for each game field:
+; |7|6|5|4|3-0|
+;  | | | |  |
+;  | | | |  `-------- Number within field
+;  | | | `----------- Number is predetermined
+;  | | `------------- Field is highlighted
+;  | `--------------- incorrect (marks number red, or yellow if predet)
+;  `----------------- Unused
 fields db 81 dup (0)
 videomode db 00h
-currentColor db 00h
+currentColor db 04h
 
 .CODE
-    ORG 100h
+    ORG 0100h
     include keyboard.asm
     include video.asm
+    include mouse.asm
 
 start:
     mov ax, @data
     mov ds, ax ; move to datasegment register
 
+    xor bx, bx
+    xor cx, cx
+    xor di, di
+    xor si, si
+
+    ; testdata
+    mov fields[0], 01100111b
+
     call prep_video
-    call draw_middle
+    call mouse_show
+    ;call draw_middle
     call draw_grid
 
-    mov al, 31h
-    xor bx, bx
-    mov currentColor, 4
-    call draw_char
+    ; draw test
+    call draw_box
 
 mainloop:
     call handle_keyboard
@@ -40,6 +54,6 @@ exit:
     int 10h
 
     ; exit program
-    mov ah, 31h
+    mov ax, 4C00h
     int 21h
 END start
