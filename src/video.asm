@@ -1,7 +1,15 @@
+; constants
 vidadr dw 0A000h
 chradr dw 0F000h
 ascadr = 0FA6Eh
 newline = 320
+origin = 13220 - 4*320 - 18 ; origin coordinate of grid (top left)
+line_thickness = 1
+box_width = 16
+box_height = 14
+hor_line_length = 9*box_width + 10*line_thickness
+vert_line_length = 9*box_height + 10*line_thickness - 9
+box_content_offset = 5 + 3*newline ; moves char to middle of box
 
 prep_video proc
     push ax
@@ -52,7 +60,7 @@ screen_white proc
 screen_white endp
 
 ; draws games grid
-draw_grid PROC
+draw_grid proc
     push bx ; lineloop
     push cx ; rowloop
     push di ; pixel location
@@ -63,13 +71,6 @@ draw_grid PROC
     xor bx, bx
     xor cx, cx
     xor di, di
-
-    origin = 13220 - 4*320 - 18 ; origin coordinate of grid (top left)
-    line_thickness = 1
-    box_width = 16
-    box_height = 14
-    hor_line_length = 9*box_width + 10*line_thickness
-    vert_line_length = 9*box_height + 10*line_thickness - 9
 
     ; draw secondary vertical
     @@subhorloop:
@@ -158,6 +159,7 @@ draw_grid ENDP
 ; al = ascii symbol ; 30h = '0'
 ; bx = start pixel
 draw_char proc
+    push bx
     push cx ; loop increment
     push di ; calculates byte to load
 
@@ -192,6 +194,7 @@ draw_char proc
     call mouse_show
     pop di
     pop cx
+    pop bx
     ret
 draw_char endp
 
@@ -199,7 +202,7 @@ draw_char endp
 ; ah = byte to use
 ; bx = pixel to draw on
 ; USAGE:
-draw_byte PROC
+draw_byte proc
     push cx ; ch = loop counter | cl = color
     push di ; address offset to write to
 
@@ -231,7 +234,7 @@ draw_byte PROC
 draw_byte ENDP
 
 ; draws middle dot onto the canvas
-draw_middle PROC
+draw_middle proc
     mov byte ptr es:[160 + 320*100 -1], 6
     mov byte ptr es:[160 + 320*99  -1], 6
     mov byte ptr es:[159 + 320*100 -1], 6
@@ -287,7 +290,7 @@ draw_box proc
     cmp si, 0
     jz @@skip_grey ; jump if not selected
 
-    mov ah, 7      ; change color to light grey
+    mov ah, Bh      ; change color to cyan
 
     @@skip_grey:
     call draw_box_background
@@ -297,26 +300,62 @@ draw_box proc
     mov si, ax
     and si, 01111b
     cmp si, 0
-    jz @@skip_number
+    jz @@return
 
     ; determine color to use for char
     ; predet. | wrong   | color
     ;------------------------------
-    ;    0    |    0    | green
+    ;    0    |    0    | blue
     ;    0    |    1    | red
     ;    1    |    0    | black
     ;    1    |    1    | yellow
-    ; TODO: HIER WEITER MACHEN
+    
+    ; check if predetermined
+    mov si, ax
+    and si, 10000b
+    cmp si, 0
+    jz @@user_placed ; jump if not predetermined
 
+    ; check if if wrong
+    mov si, ax
+    and si, 1000000b
+    cmp si, 0
+    jz @@predet_correct 
+
+    ; predetermined and wrong
+    mov currentColor, 0Eh ; yellow
+    jmp @@color_done
+
+    @@predet_correct:
+    mov currentColor, 0 ; set color black
+    jmp @@color_done ; jump to end
+
+    @@user_placed:
+    ; check if wrong
+    mov si, ax
+    and si, 1000000b
+    cmp si, 0
+    jz @@userp_correct
+
+    ; userplaced and wrong
+    mov currentColor, 0Ch ; light red
+    jmp @@color_done
+
+    @@userp_correct:
+    mov currentColor, 9 ; light blue
+
+    @@color_done:
     ; draw the char
-    push ax
+    mov si, ax
+    and si, 01111b ; write value of number from al into si
+
     mov ax, 30h ; 30h is the ascii symbol 0
     add ax, si
+
+    add bx, box_content_offset
     call draw_char
-    pop ax
 
-    @@skip_number:
-
+    @@return:
     pop si
     pop di
     pop bx
@@ -329,7 +368,7 @@ draw_box endp
 ; ah = color
 draw_box_background proc
     push cx ; loop counter: cl = inner; ch = outer
-    push di ; coordinate for es
+    push di ; coordinate for pixel
 
     xor cx, cx
     xor di, di

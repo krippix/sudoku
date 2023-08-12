@@ -31,8 +31,8 @@ start:
     xor di, di
     xor si, si
 
-    ; testdata
-    mov fields[0], 01100111b
+    ; testdata         |  |
+    mov fields[3], 00100111b
 
     call prep_video
     call mouse_show
@@ -40,7 +40,10 @@ start:
     call draw_grid
 
     ; draw test
+    mov cx, 3 ; set box number
     call draw_box
+
+    ;mov byte ptr es:[319+320], 8 ; test pixel
 
 mainloop:
     call handle_keyboard
