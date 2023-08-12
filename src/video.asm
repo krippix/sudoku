@@ -394,3 +394,25 @@ draw_box_background proc
     pop cx
     ret
 draw_box_background endp
+
+; Calculates pixel from coordinate
+; cx = x-coord
+; dx = y-coord
+; RETURN:
+; cx = pixel
+coord_to_pixel proc
+    push ax
+    push bx
+    xor ax, ax
+
+    mov ax, dx
+    mov bx, 320
+    mul bx ; := ax * bx
+
+    add ax, cx
+    mov cx, ax
+
+    pop bx
+    pop ax
+    ret
+coord_to_pixel endp

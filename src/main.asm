@@ -32,7 +32,7 @@ start:
     xor si, si
 
     ; testdata         |  |
-    mov fields[3], 00100111b
+    mov fields[3], 00001000b
 
     call prep_video
     call mouse_show
@@ -47,7 +47,7 @@ start:
 
 mainloop:
     call handle_keyboard
-    ;call draw_grid
+    call handle_mouse
     jmp mainloop
 
 exit:
