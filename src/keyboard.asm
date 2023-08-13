@@ -14,6 +14,12 @@ handle_keyboard proc
     mov ah, 00h
     int 16h
 
+    ; TODO: Check if active box is NOT 0FFh
+
+    ; TODO: Check if key is 1-9, enter, delete or backspace
+
+    ; TODO: Write pressed key to data
+
     @@return:
     pop ax
     ret

@@ -277,20 +277,23 @@ draw_box proc
     xor di, di
     xor si, si
 
-    mov bx, origin + newline + 1 ; TODO: calculate bx!!
+    call mouse_hide
+
+    mov al, cl
+    call get_box_origin
 
     ; get box from ds by provided number
     mov di, cx
-    mov al, fields[di]
+    mov al, [fields+di]
 
     ; draw background (depending on if it's selected)
     mov ah, 0Fh      ; set color to white
     mov si, ax
     and si, 100000b  ; check if selected bit is set
     cmp si, 0
-    jz @@skip_grey ; jump if not selected
+    jz @@skip_grey   ; jump if not selected
 
-    mov ah, Bh      ; change color to cyan
+    mov ah, 0Ah       ; change color to green
 
     @@skip_grey:
     call draw_box_background
@@ -355,6 +358,8 @@ draw_box proc
     add bx, box_content_offset
     call draw_char
 
+    call mouse_show
+
     @@return:
     pop si
     pop di
@@ -416,3 +421,153 @@ coord_to_pixel proc
     pop ax
     ret
 coord_to_pixel endp
+
+; get coord from pixel
+; ax = pixel
+; RETURN:
+; cx = x-coord
+; dx = y-coord
+pixel_to_coord proc
+    push bx
+
+    xor cx, cx
+    xor dx, dx
+    
+    ; y = count how often <newline> can be substracted
+    @@subtractloop:
+    sub ax, newline
+    inc dl
+    jnc @@subtractloop
+    add ax, newline
+    dec dl
+
+    ; x = leftover number
+    mov cl, al
+
+    pop bx
+    ret
+pixel_to_coord endp
+
+; calculates box [0-81] from given pixel
+; cx = x-coord
+; dx = y-coord
+; RETURN:
+; al = box nr -> FF is none
+coord_to_box proc
+    push bx ; bh = x ; bl = y 
+    push cx ; pixel to check
+    push di
+    push si
+ 
+    mov bh, cl
+    mov bl, dl
+
+    ; determine if completely out of the grid
+    cmp cx, origin_x
+    jl @@none
+ 
+    cmp cx, origin_x + hor_line_length
+    jg @@none
+
+    cmp dx, origin_y
+    jl @@none
+
+    cmp dx, origin_y + vert_line_length
+    jg @@none
+
+    ; map x axis to 1-9 (from origin to origin + horizontal_line_length)
+    xor di, di
+    mov si, origin
+
+    @@x_loop:
+    inc di
+    add si, vert_line_length + 1
+    cmp cx, si
+    jg @@x_loop
+    mov ax, di
+
+    ; map y axis to 1-9
+    xor di, di
+    mov si, origin
+    
+    @@y_loop:
+    inc di
+    add si, hor_line_length + 1
+    cmp dx, si
+    jg @@y_loop
+    mul di ; now the final number should be in al
+
+    @@return:
+    pop si
+    pop di
+    pop cx
+    pop bx
+    ret
+
+    @@none:
+    mov al, 0FFh
+    jmp @@return
+coord_to_box endp
+
+; write to origin_x and _y
+set_origin_coord proc
+    push ax
+    push cx
+    push dx
+
+    mov ax, origin
+    call pixel_to_coord
+    mov origin_x, cx
+    mov origin_y, dx
+
+    pop dx
+    pop cx
+    pop ax
+    ret
+set_origin_coord endp
+
+; calculates box's origin by it's number
+; al = box_number
+; RETURN
+; bx = pixel
+get_box_origin proc
+    push ax
+    push cx
+    push di
+    push si
+
+    xor di, di
+    mov ah, 0
+    mov al, cl
+
+    ; check which row
+    @@y_loop:
+    sub al, 9
+    inc di
+    jnc @@y_loop
+    dec di
+    add al, 9
+
+    ;         |--- x-axis ---|   |------- y-axis ----------|
+    ; coord = (ax * box_width) + (di * box_height * newline) + origin
+    ; (ax * box_width)
+    mov cx, box_width + 1 
+    mul cx
+    mov cx, ax
+
+    ; (di * box_height * newline)
+    mov ax, box_height * newline
+    mul di
+
+    add ax, cx
+    add ax, origin + 1
+
+    mov bx, ax
+    add bx, newline
+
+    pop si
+    pop di
+    pop cx
+    pop ax
+    ret
+get_box_origin endp

@@ -1,8 +1,10 @@
 ; Hides Mouse cursor
 mouse_hide proc
     push ax
+    push bx
     mov ax, 2
     int 33h
+    pop bx
     pop ax
     ret
 mouse_hide endp
@@ -42,22 +44,63 @@ get_mouse_press endp
 
 ; Handles mouse inputs
 handle_mouse proc
+    push ax
     push bx
     push cx
     push dx
     push di
 
+    xor ax, ax
+    xor di, di
+
     call get_mouse_press
     cmp bx, 0
     jz @@return ; return if nothing was pressed
 
-    ; TEST: if button was pressed, color pixel that was clicked
+    ; calculate which box (if any) the pixel belongs to
+    call coord_to_box ; returns to al -> FF is none
+    cmp al, 0FFh      ; jump to end if it's in no box
+    je @@return
+
+    ; calculate pixel from coord
     call coord_to_pixel ; returns to cx
+
+    ; if clicked box is not the currently highlighted one, deactivate the old one
+    cmp al, active_box
+    je @@invert_highlight ; jmp if equal
+
+    cmp active_box, 0FFh
+    je @@invert_highlight ; jmp if FF (none)
+
+    ; switch active status of previous
+    xor bx, bx
+    mov bl, active_box
+    mov di, bx
+    mov cl, fields[di]
+    xor cl, 00100000b
+    mov fields[di], cl
+
+    ; invert the clicked box's highlighted status
+    @@invert_highlight:
+    mov di, ax
+    mov al, fields[di]
+    xor al, 00100000b
+    mov fields[di], al
+
+    ; Change active_box variable to new box
+    mov cx, 00100000b
+    and cx, ax
+    cmp cx, 0
+    je @@return ; jump if zero
+
+    mov ax, di
+    mov active_box, al
 
     @@return:
     pop di
     pop dx
     pop cx
     pop bx
+    pop ax
     ret
 handle_mouse endp

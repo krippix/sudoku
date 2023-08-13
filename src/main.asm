@@ -5,7 +5,7 @@ LOCALS @@
 
 .DATA
 ; Array of bytes for each game field:
-; |7|6|5|4|3-0|
+; |8|7|6|5|4-1|
 ;  | | | |  |
 ;  | | | |  `-------- Number within field
 ;  | | | `----------- Number is predetermined
@@ -13,8 +13,12 @@ LOCALS @@
 ;  | `--------------- incorrect (marks number red, or yellow if predet)
 ;  `----------------- Unused
 fields db 81 dup (0)
-videomode db 00h
-currentColor db 04h
+modified db 0        ; keeps track of changes to fields
+videomode db 00h     ; used to return to previously used videomode
+currentColor db 04h  ; color to use for drawing
+active_box db 0FFh   ; number of the active box -> FF if none
+origin_x dw 0        ; top-left-most point of the grid
+origin_y dw 0        ; top-left-most point of the grid
 
 .CODE
     ORG 0100h
@@ -31,19 +35,21 @@ start:
     xor di, di
     xor si, si
 
-    ; testdata         |  |
-    mov fields[3], 00001000b
+    call set_origin_coord
 
     call prep_video
     call mouse_show
-    ;call draw_middle
     call draw_grid
 
-    ; draw test
-    mov cx, 3 ; set box number
+    mov di, 0
+    @@test_loop:
+    mov [fields+di], 01101000b ; testdata
+    mov cx, di
+    inc di
     call draw_box
+    cmp di, 81
+    jl @@test_loop
 
-    ;mov byte ptr es:[319+320], 8 ; test pixel
 
 mainloop:
     call handle_keyboard
