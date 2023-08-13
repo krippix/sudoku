@@ -42,14 +42,14 @@ start:
     call draw_grid
 
     ; fill up data
-    mov di, 0
-    @@test_loop:
-    mov [fields+di], 01001000b ; testdata
-    mov cx, di
-    inc di
-    mov modified, 1
-    cmp di, 81
-    jl @@test_loop
+    ;mov di, 0
+    ;@@test_loop:
+    ;mov [fields+di], 00001000b ; testdata
+    ;mov cx, di
+    ;inc di
+    ;mov modified, 1
+    ;cmp di, 81
+    ;jl @@test_loop
     ; end fill data  
 
 mainloop:

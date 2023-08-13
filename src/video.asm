@@ -412,9 +412,9 @@ draw_box proc
     add bx, box_content_offset
     call draw_char
 
+    @@return:
     call mouse_show
 
-    @@return:
     pop si
     pop di
     pop bx
@@ -558,7 +558,7 @@ coord_to_box proc
     add si, box_width + 1
     cmp cx, si
     jg @@x_loop
-    dec di ;TODO: Maybe reenable
+    dec di
     mov ax, di
 
     ; map y axis to 1-9
@@ -581,14 +581,6 @@ coord_to_box proc
     pop bx
     pop ax
     add ax, di
-
-    ; TEST
-    push dx
-    mov dx, ax
-    call draw_dx
-    pop dx
-    ; END TEST
-    ;call draw_dx
 
     @@return:
     pop si
