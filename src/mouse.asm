@@ -88,13 +88,18 @@ handle_mouse proc
     mov [fields+di], al
     mov modified, 1
 
-    ; Change active_box variable to new box
+    ; Change active_box variable to new box (if it became active)
     mov cx, 00100000b
     and cx, ax
     cmp cx, 0
-    je @@return ; jump if zero
+    je @@inactive ; jump if zero
 
     mov ax, di
+    mov active_box, al
+    jmp @@return
+
+    @@inactive:
+    mov ax, 0FFh
     mov active_box, al
 
     @@return:
