@@ -7,7 +7,7 @@ origin = 13220 - 4*320 - 18 ; origin coordinate of grid (top left)
 line_thickness = 1
 box_width = 16
 box_height = 14
-hor_line_length = 9*box_width + 10*line_thickness
+hor_line_length = (9*box_width) + (10*line_thickness)
 vert_line_length = 9*box_height + 10*line_thickness - 9
 box_content_offset = 5 + 3*newline ; moves char to middle of box
 
@@ -156,11 +156,13 @@ draw_grid proc
 draw_grid ENDP
 
 ; draws a 8x8 char from memory
-; al = ascii symbol ; 30h = '0'
+; al = ascii symbol ; 30h = '0' ; 41h = 'A'
 ; bx = start pixel
 draw_char proc
+    push ax
     push bx
     push cx ; loop increment
+    push dx
     push di ; calculates byte to load
 
     call mouse_hide
@@ -193,8 +195,10 @@ draw_char proc
 
     call mouse_show
     pop di
+    pop dx
     pop cx
     pop bx
+    pop ax
     ret
 draw_char endp
 
@@ -232,6 +236,56 @@ draw_byte proc
     pop cx
     ret
 draw_byte ENDP
+
+; draws dx register to top left of the screen
+; dx = data to display
+draw_dx proc
+    push ax ; ascii symbol to draw <- result
+    push bx ; current pixel
+    push cx ; 
+    push dx ; data to display
+    push di ; loop counter
+    push si ; value to and with
+
+    xor ax, ax
+    mov cl, 12
+    xor di, di
+    mov si, 0F000h
+    mov bx, newline + 1
+    mov currentColor, 8
+
+    ; draw as hex
+    @@byte_loop:
+    mov ax, dx
+    and ax, si
+    shr si, 4
+    shr ax, cl
+    cmp al, 9
+    jle @@draw       ; dont jump if letter
+    add al, 7
+
+    @@draw:
+    push ax
+    mov ah, 0Fh
+    call draw_box_background
+    pop ax
+    add al, 30h
+    call draw_char  ; al = ascii symbol ; 30h = '0' , 40h = 'A'
+    add bx, 9       ; move cursor
+
+    sub cl, 4
+    inc di
+    cmp di, 4
+    jne @@byte_loop
+
+    pop si
+    pop di
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+draw_dx endp
 
 ; draws middle dot onto the canvas
 draw_middle proc
@@ -400,6 +454,26 @@ draw_box_background proc
     ret
 draw_box_background endp
 
+draw_all_boxes proc
+    push ax
+    push cx
+    push di
+
+    xor di, di
+
+    @@draw_loop:
+    mov cx, di
+    call draw_box
+    inc di
+    cmp di, 81
+    jl @@draw_loop
+
+    pop di
+    pop cx
+    pop ax
+    ret
+draw_all_boxes endp
+
 ; Calculates pixel from coordinate
 ; cx = x-coord
 ; dx = y-coord
@@ -454,8 +528,8 @@ pixel_to_coord endp
 ; RETURN:
 ; al = box nr -> FF is none
 coord_to_box proc
-    push bx ; bh = x ; bl = y 
-    push cx ; pixel to check
+    push cx
+    push dx
     push di
     push si
  
@@ -465,43 +539,62 @@ coord_to_box proc
     ; determine if completely out of the grid
     cmp cx, origin_x
     jl @@none
- 
-    cmp cx, origin_x + hor_line_length
-    jg @@none
 
+    cmp cx, 0EBh ; multiplying variables yielded wrong results
+    jg @@none
+    
     cmp dx, origin_y
     jl @@none
 
-    cmp dx, origin_y + vert_line_length
+    cmp dx, 0A3h
     jg @@none
 
     ; map x axis to 1-9 (from origin to origin + horizontal_line_length)
     xor di, di
-    mov si, origin
+    mov si, origin_x
 
     @@x_loop:
     inc di
-    add si, vert_line_length + 1
+    add si, box_width + 1
     cmp cx, si
     jg @@x_loop
+    dec di ;TODO: Maybe reenable
     mov ax, di
 
     ; map y axis to 1-9
     xor di, di
-    mov si, origin
+    mov si, origin_y
     
     @@y_loop:
     inc di
-    add si, hor_line_length + 1
+    add si, box_height
     cmp dx, si
     jg @@y_loop
-    mul di ; now the final number should be in al
+    dec di
+    
+    push ax
+    push bx 
+    mov ax, di
+    mov bx, 9
+    mul bx
+    mov di, ax
+    pop bx
+    pop ax
+    add ax, di
+
+    ; TEST
+    push dx
+    mov dx, ax
+    call draw_dx
+    pop dx
+    ; END TEST
+    ;call draw_dx
 
     @@return:
     pop si
     pop di
+    pop dx
     pop cx
-    pop bx
     ret
 
     @@none:
@@ -571,3 +664,20 @@ get_box_origin proc
     pop ax
     ret
 get_box_origin endp
+
+;
+handle_changes proc
+    push ax
+
+    xor ax, ax
+
+    mov al, modified
+    cmp modified, 0
+    je @@return
+    call draw_all_boxes
+    mov modified, 0
+
+    @@return:
+    pop ax
+    ret
+handle_changes endp

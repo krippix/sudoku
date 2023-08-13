@@ -58,7 +58,7 @@ handle_mouse proc
     jz @@return ; return if nothing was pressed
 
     ; calculate which box (if any) the pixel belongs to
-    call coord_to_box ; returns to al -> FF is none
+    call coord_to_box ; returns to al; -> FF is none
     cmp al, 0FFh      ; jump to end if it's in no box
     je @@return
 
@@ -76,16 +76,17 @@ handle_mouse proc
     xor bx, bx
     mov bl, active_box
     mov di, bx
-    mov cl, fields[di]
+    mov cl, [fields+di]
     xor cl, 00100000b
-    mov fields[di], cl
+    mov [fields+di], cl
 
     ; invert the clicked box's highlighted status
     @@invert_highlight:
     mov di, ax
-    mov al, fields[di]
+    mov al, [fields+di]
     xor al, 00100000b
-    mov fields[di], al
+    mov [fields+di], al
+    mov modified, 1
 
     ; Change active_box variable to new box
     mov cx, 00100000b
