@@ -43,7 +43,3 @@ To run the software simply type `run` in the project root after compilation.
 | [`int 16h`](https://en.wikipedia.org/wiki/INT_16H)                      | Keyboard |
 | [`int 21h`](https://www.i8086.de/dos-int-21h/dos-int-21h.html)          | etc.     |
 | [`int 33h`](https://stanislavs.org/helppc/int_33.html)                  | Mouse    |
-
-### Programming notes
-
-- pixel coordinate = x + (320 * y) - 1

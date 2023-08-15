@@ -297,27 +297,6 @@ draw_middle proc
     ret
 draw_middle ENDP
 
-; test function for measuring girdsize
-draw_gridmeasure proc
-    mov byte ptr es:[origin+1*321], 3
-    mov byte ptr es:[origin+2*321], 3
-    mov byte ptr es:[origin+3*321], 3
-    mov byte ptr es:[origin+4*321], 3
-    mov byte ptr es:[origin+5*321], 3
-    mov byte ptr es:[origin+6*321], 3
-    mov byte ptr es:[origin+7*321], 3
-    mov byte ptr es:[origin+8*321], 3
-    mov byte ptr es:[origin+9*321], 3
-    mov byte ptr es:[origin+10*321], 3
-    mov byte ptr es:[origin+11*321], 3
-    mov byte ptr es:[origin+12*321], 3
-    mov byte ptr es:[origin+13*321], 3
-    mov byte ptr es:[origin+12*321+2], 3
-    mov byte ptr es:[origin+13*321+2], 3
-    mov byte ptr es:[origin+12*321+4], 3
-    ret
-draw_gridmeasure endp
-
 ; Draws box onto the screen
 ; cx = box number [0-80]
 draw_box proc
