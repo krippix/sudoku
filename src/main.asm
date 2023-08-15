@@ -10,21 +10,22 @@ LOCALS @@
 ;  | | | |  `-------- Number within field
 ;  | | | `----------- Number is predetermined
 ;  | | `------------- Field is highlighted
-;  | `--------------- incorrect (marks number red, or yellow if predet)
+;  | `--------------- collision (marks number red, or yellow if predet)
 ;  `----------------- Unused
 fields db 81 dup (0)
-modified db 0        ; keeps track of changes to fields
-videomode db 00h     ; used to return to previously used videomode
-currentColor db 04h  ; color to use for drawing
-active_box db 0FFh   ; number of the active box -> FF if none
-origin_x dw 0        ; top-left-most point of the grid
-origin_y dw 0        ; top-left-most point of the grid
+videomode db 00h        ; used to return to previously used videomode
+last_modified dw 0FFh   ; last modified box FF -> none
+currentColor db 04h     ; color to use for drawing
+active_box db 0FFh      ; number of the active box -> FF if none
+origin_x dw 0           ; top-left-most point of the grid
+origin_y dw 0           ; top-left-most point of the grid
 
 .CODE
     ORG 0100h
     include keyboard.asm
     include video.asm
     include mouse.asm
+    include game.asm
 
 start:
     mov ax, @data
@@ -41,21 +42,10 @@ start:
     call mouse_show
     call draw_grid
 
-    ; fill up data
-    ;mov di, 0
-    ;@@test_loop:
-    ;mov [fields+di], 00001000b ; testdata
-    ;mov cx, di
-    ;inc di
-    ;mov modified, 1
-    ;cmp di, 81
-    ;jl @@test_loop
-    ; end fill data  
-
 mainloop:
     call handle_mouse
     call handle_keyboard
-    call handle_changes
+    call handle_game
     jmp mainloop
 
 exit:

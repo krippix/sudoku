@@ -323,6 +323,7 @@ draw_gridmeasure endp
 draw_box proc
     push ax ; al = byte; ah = color
     push bx ; stores origin of box to draw
+    push cx ; box to draw
     push di ; used to load data from ds
     push si ; holds calculation results
 
@@ -417,6 +418,7 @@ draw_box proc
 
     pop si
     pop di
+    pop cx
     pop bx
     pop ax
     ret
@@ -656,20 +658,3 @@ get_box_origin proc
     pop ax
     ret
 get_box_origin endp
-
-;
-handle_changes proc
-    push ax
-
-    xor ax, ax
-
-    mov al, modified
-    cmp modified, 0
-    je @@return
-    call draw_all_boxes
-    mov modified, 0
-
-    @@return:
-    pop ax
-    ret
-handle_changes endp

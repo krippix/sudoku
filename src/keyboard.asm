@@ -38,12 +38,11 @@ handle_keyboard proc
 
     mov di, bx
     mov cl, [fields+di]
-    and cl, 11010000b
+    and cl, 10010000b
     mov [fields+di], cl
-    mov modified, 1
     mov active_box, 0FFh
 
-    jmp @@return
+    jmp @@draw
 
     @@skip_backspace:
     ; Check for number 1-9
@@ -55,12 +54,16 @@ handle_keyboard proc
 
     ; write new number to data
     mov cl, [fields+di]
-    and cl, 11010000b       ; clear existing number and make inactive
+    and cl, 10010000b       ; clear existing number, make inactive and remove collision bit
     sub al, 30h
     or cl, al
     mov [fields+di], cl
-    mov modified, 1
     mov active_box, 0FFh    ; mark box as inactive
+
+    @@draw:
+    mov cx, di
+    mov last_modified, cx
+    call draw_box
 
     @@return:
     pop di

@@ -80,14 +80,19 @@ handle_mouse proc
     xor cl, 00100000b
     mov [fields+di], cl
 
+    mov cx, di
+    call draw_box
+
     ; invert the clicked box's highlighted status
     @@invert_highlight:
     mov di, ax
     mov al, [fields+di]
     xor al, 00100000b
     mov [fields+di], al
-    mov modified, 1
 
+    mov cx, di
+    call draw_box
+    
     ; Change active_box variable to new box (if it became active)
     mov cx, 00100000b
     and cx, ax
