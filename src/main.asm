@@ -35,7 +35,7 @@ start:
     xor cx, cx
     xor di, di
     xor si, si
-
+    ;call find_collisions_cube
     call set_origin_coord
 
     call prep_video
