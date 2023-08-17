@@ -7,6 +7,8 @@ handle_game endp
 find_collisions proc
     push ax
     push bx
+    push cx
+    push dx
     push di
 
     mov bx, last_modified
@@ -22,12 +24,17 @@ find_collisions proc
     call find_collisions_vert
 
     ; determine current cube
+    ; dl = cube nr.
+    call rows_to_cube
+
     ; find collsions in current cube
 
     mov last_modified, 0FFh ; reset last modified to none
 
     @@return:
     pop di
+    pop dx
+    pop cx
     pop bx
     pop ax
     ret
@@ -161,11 +168,6 @@ find_collisions_vert proc
     cmp di, ax
     jl @@outer_loop
 
-    push dx
-    mov dx, si
-    call draw_dx
-    pop dx
-
     @@return:
     pop si
     pop di
@@ -199,13 +201,36 @@ box_to_row proc
     ret
 box_to_row endp
 
-; determine cube nr from box nr
-; bl = cube nr
-box_to_cube proc
+; determine cube nr from horizontal and vertical row
+; formula: bl = ( ch // 3 ) * 3 + ( cl // 3)
+; ch = vertical row
+; cl = horizontal row
+; RETURN:
+; bl = 
+rows_to_cube proc
+    push ax
     push cx
 
-    TODO
+    xor ax, ax
+    xor bx, bx
+
+    ; ax = ( ch // 3 ) * 3
+    mov al, cl
+    mov dl, 3
+
+    div dl
+    mul dl
+    mov bx, ax
+
+    ; ax = cl // 3
+    mov al, ch
+    div dl
+
+    add ax, bx
+
+    mov bl, al 
 
     pop cx
+    pop ax
     ret
-box_to_cube endp
+rows_to_cube endp
