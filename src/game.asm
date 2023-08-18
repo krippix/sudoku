@@ -30,11 +30,6 @@ find_collisions proc
     ; find collsions in current cube
     call find_collisions_cube
 
-    push dx
-    mov dx, bx
-    call draw_dx
-    pop dx
-
     mov last_modified, 0FFh ; reset last modified to none
 
     @@return:
@@ -189,11 +184,16 @@ find_collisions_vert endp
 ; nothing
 find_collisions_cube proc
     push ax
+    push bx
     push cx     ; holds bytes to compare
-    push di     ; current box
-    push si     ; box to compare to
+    push dx     ; loop iterators, dh = outer, dl = inner
+    push di     ; current box (outer)
+    push si     ; current box (inner)
 
     xor ax, ax
+    xor bh, bh
+    xor cx, cx
+    xor dx, dx
     xor di, di
 
     ; set top-left box in the cube
@@ -242,60 +242,148 @@ find_collisions_cube proc
     jmp @@jump_table_end
     @@case_8:
     mov bl, 60
-
     @@jump_table_end:
-    jmp @@return ; tmp
-
-    ; TODO IMPLEMENT ITERATION OVER ELEMENTS
-
-    ; make ax the upper bound
-    add ax, 72
+    ; first box : bl
+    mov di, bx          ; prepare outer iterator
+    xor dx, dx
+    xor bx, bx
 
     @@outer_loop:
-    mov si, di
-    add si, 9
+    mov dl, dh
+    inc dl              ; inner starts one ahead of outer
+    
+    mov ch, [fields+di]
+    mov bh, ch          ; copy loaded value
+    and bh, 00001111b   ; isolate number
 
-    mov cl, [fields+di] ; load byte and isolate number
-    mov bl, cl
-    and bl, 00001111b
+    ; move si ahead of di
+    push bx
+    push cx
+
+    xor bx, bx
+    mov bl, dh
+    mov cx, di
+    call cube_next_box
+    mov si, ax
+
+    pop cx
+    pop bx
 
     @@inner_loop:
-    mov ch, [fields+si] ; load byte and isolate number
-    mov bh, ch
-    and bh, 00001111b
+    mov cl, [fields+si]
+    mov bl, cl          ; copy to bl
+    and bl, 00001111b   ; isolate number in bl
 
-    cmp bh, bl
+    cmp bh, bl          ; check if they collide
     jne @@not_equal
 
-    or cl, 01000000b
+    ; set collision to true on both
     or ch, 01000000b
+    or cl, 01000000b
 
-    mov [fields+di], cl
-    mov [fields+si], ch
+    ; write changes back to data
+    mov [fields+di], ch
+    mov [fields+si], cl
 
-    ; draw changed boxes
+    cmp bh, 0
+    je @@testerino
+    push dx
+    mov dx, di
+    mov dh, ch
+    call draw_dx
+    pop dx
+    @@testerino:
+
+    ; draw changes
     push cx
-    mov cx, di
+    push dx
+
+    mov cx, di      ; draw box nr di
     call draw_box
-    mov cx, si
+    mov cx, si      ; draw box nr si
     call draw_box
+
+    pop dx
     pop cx
 
     @@not_equal:
-    add si, 9
-    cmp si, ax
-    jle @@inner_loop
-    add di, 9
-    cmp di, ax
+    ; get next si
+    push bx
+    push cx
+
+    xor bx, bx
+    mov bl, dl          ; prepare bx
+    mov cx, si          ; prepare cx
+    call cube_next_box  ; calculate next box
+    mov si, ax          ; write result back
+
+    pop cx
+    pop bx
+
+    inc dl              ; increate iterator
+
+    cmp dl, 9
+    jl @@inner_loop
+
+    ; get next di
+    push bx
+    push cx
+
+    xor bx, bx
+    mov bl, dh          ; prepare bx
+    mov cx, di          ; prepare cx
+    call cube_next_box
+    mov di, ax
+
+    pop cx
+    pop bx
+
+    inc dh
+    cmp dh, 9
     jl @@outer_loop
 
     @@return:
     pop si
     pop di
+    pop dx
     pop cx
+    pop bx
     pop ax
     ret
 find_collisions_cube endp
+
+; cube nr [0-8] and relative box nr (within box) [0-8] and returns next one
+; bx = relative box nr
+; cx = box nr
+; RETURN:
+; ax = next box number
+cube_next_box proc
+    push bx
+    push cx
+    push dx
+
+    inc bx
+
+    ; check if next row
+    cmp bx, 3
+    je @@next_row
+    cmp bx, 6
+    je @@next_row
+
+    jmp @@moved
+
+    @@next_row:
+    add cx, 6
+
+    @@moved:
+    inc cx
+    mov ax, cx
+
+    pop dx
+    pop cx
+    pop bx
+    ret
+cube_next_box endp
 
 ; takes boxnumber and returns horizontal row number [0-8]
 ; bx = boxnumber

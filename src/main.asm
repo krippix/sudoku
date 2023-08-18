@@ -35,12 +35,17 @@ start:
     xor cx, cx
     xor di, di
     xor si, si
-    ;call find_collisions_cube
+    
     call set_origin_coord
 
     call prep_video
     call mouse_show
     call draw_grid
+
+    push bx
+    mov bx, 3
+    ;call find_collisions_cube
+    pop bx
 
 mainloop:
     call handle_mouse
@@ -51,7 +56,7 @@ mainloop:
 exit:
     ; return to initial videomode
     mov ah, 00h
-    mov al, videomode 
+    mov al, videomode
     int 10h
 
     ; exit program
