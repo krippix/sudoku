@@ -31,6 +31,8 @@ To run the software simply type `run` in the project root after compilation.
 
 ## Dokumentation and Notes
 
+### Useful Links
+
 - [TASM user Guide](http://bitsavers.informatik.uni-stuttgart.de/pdf/borland/turbo_assembler/Turbo_Assembler_Version_5_Users_Guide.pdf)
 - [Video Modes](http://www.columbia.edu/~em36/wpdos/videomodes.txt)
 - [Interrupts](http://www.ctyme.com/intr/rb-0087.htm)
@@ -43,3 +45,16 @@ To run the software simply type `run` in the project root after compilation.
 | [`int 16h`](https://en.wikipedia.org/wiki/INT_16H)                      | Keyboard |
 | [`int 21h`](https://www.i8086.de/dos-int-21h/dos-int-21h.html)          | etc.     |
 | [`int 33h`](https://stanislavs.org/helppc/int_33.html)                  | Mouse    |
+
+### Tests
+
+TODO: Show how you tested your software
+
+## Files Required for Exam Submission
+
+The Zip-File, named "surname_name.zip"
+- [ ] cover sheet
+- [ ] short manual
+- [ ] design sketch
+- [ ] test examples and/or procedures
+- [ ] assembler source-code and executable
