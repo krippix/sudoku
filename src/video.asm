@@ -345,7 +345,7 @@ draw_box proc
     ;    0    |    0    | blue
     ;    0    |    1    | red
     ;    1    |    0    | black
-    ;    1    |    1    | yellow
+    ;    1    |    1    | magenta
     
     ; check if predetermined
     mov si, ax
@@ -360,7 +360,7 @@ draw_box proc
     jz @@predet_correct 
 
     ; predetermined and wrong
-    mov currentColor, 0Eh ; yellow
+    mov currentColor, 0Dh ; magenta
     jmp @@color_done
 
     @@predet_correct:

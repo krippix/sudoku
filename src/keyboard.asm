@@ -38,7 +38,7 @@ handle_keyboard proc
 
     mov di, bx
     mov cl, [fields+di]
-    and cl, 10010000b
+    and cl, 00010000b
     mov [fields+di], cl
     mov active_box, 0FFh
 

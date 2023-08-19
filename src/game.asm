@@ -15,22 +15,16 @@ find_collisions proc
     cmp last_modified, 0FFh ; check if nothing changed
     je @@return
 
-    ; write box's vertical and horizontal rows to cx
-    ; cl = horizontal | ch = vertical
-    call box_to_row
+    ;take care of collisions
+    call resolve_collisions
 
-    ; find collisions
-    call find_collisions_hor
-    call find_collisions_vert
-
-    ; determine current cube
-    ; dl = cube nr.
-    call rows_to_cube
-
-    ; find collsions in current cube
-    call find_collisions_cube
+    ; draw lates changed one
+    mov cx, bx
+    call draw_box
 
     mov last_modified, 0FFh ; reset last modified to none
+
+    ; TODO: determine if game is completed
 
     @@return:
     pop di
@@ -89,9 +83,9 @@ find_collisions_hor proc
     ; draw changed boxes
     push cx
     mov cx, di
-    call draw_box
+    ;call draw_box
     mov cx, si
-    call draw_box
+    ;call draw_box
     pop cx
 
     @@not_equal:
@@ -156,9 +150,9 @@ find_collisions_vert proc
     ; draw changed boxes
     push cx
     mov cx, di
-    call draw_box
+    ;call draw_box
     mov cx, si
-    call draw_box
+    ;call draw_box
     pop cx
 
     @@not_equal:
@@ -285,23 +279,14 @@ find_collisions_cube proc
     mov [fields+di], ch
     mov [fields+si], cl
 
-    cmp bh, 0
-    je @@testerino
-    push dx
-    mov dx, di
-    mov dh, ch
-    call draw_dx
-    pop dx
-    @@testerino:
-
     ; draw changes
     push cx
     push dx
 
     mov cx, di      ; draw box nr di
-    call draw_box
+    ;call draw_box
     mov cx, si      ; draw box nr si
-    call draw_box
+    ;call draw_box
 
     pop dx
     pop cx
@@ -442,3 +427,97 @@ rows_to_cube proc
     pop ax
     ret
 rows_to_cube endp
+
+; Checks the entire sudoku for collisions again
+resolve_collisions proc
+    push ax
+    push bx
+    push cx
+    push di
+
+    ; set 7th bit on every box to 0
+    xor di, di
+    @@box_loop:
+    mov cl, [fields+di]
+    and cl, 10111111b
+    mov [fields+di], cl
+    inc di
+    cmp di, 81
+    jl @@box_loop
+
+    push bx
+    push cx
+    xor bx, bx
+    xor cx, cx
+    @@collision_loop:
+    ; check for collisions on every vertical row
+    call find_collisions_hor    ; cl = rownr
+
+    ; check for collisions on every horizontal row
+    call find_collisions_vert   ; ch = colnr
+
+    ; check for collisions on every cube
+    call find_collisions_cube   ; bl = cubnr
+
+    inc cl
+    inc ch
+    inc bl
+
+    cmp cl, 9
+    jl @@collision_loop
+    pop cx
+    pop bx
+
+    ; set BOTH collision bits on non-equal 7-8th bits
+    ; redraw the affected boxes
+    xor di, di
+    @@resolve_loop:
+    mov cl, [fields+di]
+    mov al, cl
+    and al, 11000000b   ; isolate bit 8 and 7
+    cmp al, 128         ; check if only 8th bit is set
+    je @@bit_8
+    cmp al, 64          ; check if only 7th bit is set
+    je @@bit_7
+    jmp @@skip_draw
+
+    @@bit_8:
+    and cl, 00111111b   ; set both collision bits to zero
+    jmp @@draw
+    
+    @@bit_7:            ; set both collision bits to one
+    or cl, 11000000b
+
+    @@draw:
+    mov [fields+di], cl ; write back
+
+    ; draw affected box
+    push cx
+    push dx
+    mov cx, di
+    call draw_box
+    pop dx
+    pop cx
+    @@skip_draw:
+    inc di
+    cmp di, 81
+    jl @@resolve_loop
+
+    pop di
+    pop cx
+    pop bx
+    pop ax
+    ret
+resolve_collisions endp
+
+; checks if game was won
+check_win_condition proc
+
+    ; check if no box is 0
+
+    ; check if no box has collision bit set
+
+    ; display win
+
+    ret
+check_win_condition endp

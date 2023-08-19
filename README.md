@@ -53,6 +53,7 @@ TODO: Show how you tested your software
 ## Files Required for Exam Submission
 
 The Zip-File, named "surname_name.zip"
+
 - [ ] cover sheet
 - [ ] short manual
 - [ ] design sketch

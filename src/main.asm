@@ -11,7 +11,7 @@ LOCALS @@
 ;  | | | `----------- Number is predetermined
 ;  | | `------------- Field is highlighted
 ;  | `--------------- collision (marks number red, or yellow if predet)
-;  `----------------- Unused
+;  `----------------- collision bit 2 (used to determine if collision changed)
 fields db 81 dup (0)
 videomode db 00h        ; used to return to previously used videomode
 last_modified dw 0FFh   ; last modified box FF -> none
