@@ -58,6 +58,16 @@ mainloop:
     jmp mainloop
 
 exit:
+    ; restore interrupt vector
+    push ds
+    mov ax, [previous_vector]
+    mov dx, [previous_vector+2]
+    mov ds, ax
+
+    mov ax, 251Ch
+    ;int 21h
+    pop ds
+
     ; return to initial videomode
     mov ah, 00h
     mov al, videomode
