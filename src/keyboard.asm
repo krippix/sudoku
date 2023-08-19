@@ -20,6 +20,10 @@ handle_keyboard proc
     mov ah, 00h
     int 16h
 
+    ; jump back if game is over
+    cmp gameover, 1
+    je @@return
+
     ; Check if active box is NOT 0FFh
     mov bl, active_box
     cmp bl, 0FFh  

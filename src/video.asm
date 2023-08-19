@@ -637,3 +637,76 @@ get_box_origin proc
     pop ax
     ret
 get_box_origin endp
+
+; Draws indicator showing that the game is won
+draw_win proc
+    push ax
+    push bx
+    push cx
+    push di
+
+    xor ax, ax
+    xor di, di
+
+    mov cl, currentColor
+    mov currentColor, 2     ; red color
+    
+    mov bx, 16*320+125
+    @@draw_loop:
+    mov al, [you_win+di]
+
+    call draw_char
+
+    add bx, 9
+    inc di
+    cmp di, 8
+    jl @@draw_loop
+
+    mov currentColor, cl    ; restore previous color
+
+    pop di
+    pop cx
+    pop bx
+    pop ax
+    ret
+draw_win endp
+
+; Draws indicator showing that the game was lost
+; that implementation is ugly
+draw_lose proc
+    push ax
+    push bx
+    push cx
+    push dx
+    push di
+
+    xor ax, ax
+    xor di, di
+    ; al = ascii symbol ; 30h = '0' ; 41h = 'A'
+    ; bx = start pixel
+    ; draw_char
+
+    mov cl, currentColor
+    mov currentColor, 4     ; red color
+    
+    mov bx, 16*320+120
+
+    @@draw_loop:
+    mov al, [you_lose+di]
+
+    call draw_char
+
+    add bx, 9
+    inc di
+    cmp di, 9
+    jl @@draw_loop
+
+    mov currentColor, cl    ; restore previous color
+
+    pop di
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+draw_lose endp

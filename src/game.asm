@@ -1,5 +1,6 @@
 handle_game proc
     call find_collisions
+    call check_win_condition
     ret
 handle_game endp
 
@@ -512,12 +513,51 @@ resolve_collisions endp
 
 ; checks if game was won
 check_win_condition proc
+    push ax
+    push bx
+    push di
 
-    ; check if no box is 0
+    xor ax, ax
+    xor bx, bx
+    xor di, di
 
-    ; check if no box has collision bit set
+    
+    @@box_loop:
+    mov al, [fields+di]
+    mov bl, al
+    and bl, 00001111b
+    cmp bl, 0           ; check if no box is 0
+    je @@return
+    mov bl, al
+    and bl, 01000000b
+    cmp bl, 64          ; check if collision bit is set
+    je @@return
+
+    inc di
+    cmp di, 81
+    jl @@box_loop
+
+    ; sudoku was valid
+    call game_won
 
     ; display win
-
+    @@return:
+    pop di
+    pop bx
+    pop ax
     ret
 check_win_condition endp
+
+; called if game is won
+game_won proc
+    mov gameover, 1     ; disables all keyboard inputs but esc
+    call draw_win
+    ret
+game_won endp
+
+; called if game lost
+game_lost proc
+    mov gameover, 1
+    call draw_lose
+    ret
+game_lost endp
