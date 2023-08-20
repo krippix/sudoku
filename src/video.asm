@@ -468,6 +468,35 @@ draw_all_boxes proc
 draw_all_boxes endp
 
 
+; draws all boxes with value that is not 0
+draw_set_boxes proc
+    push bx
+    push cx ; box nr to draw
+    push di
+    
+    xor cx, cx
+    xor di, di
+
+    @@box_loop:
+    mov bl, [fields+di]
+    cmp bl, 0
+    je @@skip_draw
+
+    call draw_box
+    
+    @@skip_draw:
+    inc cx
+    inc di
+    cmp cx, 81
+    jl @@box_loop
+
+    pop di
+    pop cx
+    pop bx
+    ret
+draw_set_boxes endp
+
+
 ; Calculates pixel from coordinate
 ; cx = x-coord
 ; dx = y-coord

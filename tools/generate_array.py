@@ -7,21 +7,26 @@
 def main():
     print("Welcome to my weird asm-sudoku-generator thingy!")
 
-    print("Please Enter 9 digits, separated by spacebars")
+    print("Please Enter 9 digits and hit enter after each row:")
 
     result_list = []
 
     i = 0
     while i < 9:
-        print(f"row {i+1}: ", end="")
         tmp = input()
         result_split = tmp.split(" ")
-        result_list.append(result_split)
+        result_list.extend(result_split)
 
-    # convert result to integers
-    #final_list = []
-    #for num in result_list:
-    #    final_list.append(chr(num))
+        i += 1
+
+    # convert results to integers
+    int_list = []
+    for num in result_list:
+        num = int(num)
+        if num != 0:
+            num = num | 0b0001_0000 # marks as predetermined
+
+        int_list.append(num)
 
     # check if list has correct size
     if len(result_list) != 81:
@@ -29,10 +34,10 @@ def main():
         exit()
     
     result_string = ""
-    for num in result_list:
-        result_string += hex(ord(num)).upper()[2:]+"h"
+    for num in int_list:
+        result_string += hex(ord(chr(num))).upper()[2:]+"h, "
 
-    print(result_string)
+    print(result_string[:-2])
 
 if __name__ == "__main__":
     main()

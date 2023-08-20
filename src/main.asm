@@ -25,9 +25,9 @@ active_box db 0FFh              ; number of the active box -> FF if none
 origin_x dw 0                   ; top-left-most point of the grid
 origin_y dw 0                   ; top-left-most point of the grid
 ; prepared sudoku fields
-easy_sudoku db
-medium_sudoku db
-hard_sudoku db
+easy_sudoku db 0h, 0h, 16h, 0h, 0h, 18h, 0h, 0h, 0h, 0h, 0h, 0h, 15h, 0h, 0h, 0h, 16h, 12h, 12h, 19h, 0h, 0h, 0h, 0h, 15h, 17h, 0h, 0h, 0h, 0h, 18h, 14h, 0h, 19h, 0h, 0h, 0h, 12h, 15h, 11h, 16h, 0h, 18h, 13h, 17h, 18h, 11h, 19h, 13h, 15h, 0h, 0h, 12h, 14h, 0h, 14h, 12h, 19h, 0h, 13h, 0h, 0h, 0h, 0h, 0h, 0h, 12h, 0h, 0h, 17h, 0h, 0h, 16h, 18h, 0h, 0h, 0h, 15h, 0h, 0h, 13h
+medium_sudoku db 16h, 0h, 14h, 0h, 0h, 0h, 19h, 18h, 0h, 18h, 19h, 0h, 16h, 0h, 13h, 0h, 0h, 0h, 0h, 0h, 0h, 19h, 0h, 0h, 12h, 0h, 16h, 0h, 0h, 0h, 0h, 11h, 15h, 0h, 12h, 0h, 0h, 0h, 0h, 0h, 0h, 0h, 0h, 15h, 0h, 15h, 12h, 11h, 0h, 0h, 0h, 13h, 19h, 18h, 0h, 17h, 15h, 11h, 0h, 0h, 0h, 16h, 19h, 14h, 0h, 0h, 15h, 0h, 0h, 0h, 0h, 0h, 19h, 0h, 13h, 0h, 0h, 12h, 15h, 0h, 0h
+hard_sudoku db 0h, 12h, 19h, 11h, 0h, 0h, 0h, 16h, 0h, 0h, 17h, 0h, 0h, 0h, 0h, 0h, 0h, 15h, 0h, 0h, 11h, 13h, 0h, 14h, 0h, 0h, 0h, 0h, 0h, 13h, 0h, 0h, 0h, 0h, 0h, 19h, 0h, 0h, 0h, 16h, 14h, 0h, 18h, 0h, 0h, 0h, 0h, 0h, 15h, 13h, 0h, 0h, 0h, 12h, 0h, 19h, 0h, 0h, 0h, 0h, 12h, 0h, 0h, 0h, 0h, 0h, 12h, 0h, 0h, 0h, 0h, 0h, 18h, 0h, 0h, 0h, 0h, 0h, 0h, 15h, 17h
 ; "strings"
 str_sudoku db 53h, 75h, 64h, 6Fh, 6Bh, 75h, 0FFh
 str_loadEmpty db 31h, 3Ah, 20h, 4Ch, 6Fh, 61h, 64h, 20h, 45h, 6Dh, 70h, 74h, 79h, 20h, 47h, 72h, 69h, 64h, 0FFh
@@ -51,7 +51,6 @@ you_win  db 59h, 6Fh, 75h, 20h, 57h, 69h, 6Eh, 21h, 0FFh
     include game.asm
     include timer.asm
     include menu.asm
-    include data.asm
 
 start:
     mov ax, @data

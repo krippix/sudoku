@@ -58,11 +58,12 @@ find_collisions_hor proc
 
     ; iterate over the row
     ; make ax the upper bound
-    add ax, 9
+    add ax, 8
 
     @@outer_loop:
     mov si, di
     inc si
+    inc ax
 
     mov cl, [fields+di] ; load byte and isolate number
     mov bl, cl
@@ -95,6 +96,7 @@ find_collisions_hor proc
     cmp si, ax
     jl @@inner_loop
     inc di
+    dec ax
     cmp di, ax
     jl @@outer_loop
 
@@ -591,7 +593,11 @@ game_lost endp
 
 start_game proc
     push bx
-    push dx 
+    push dx
+
+    mov gameover, 0
+    mov last_modified, 0FFh
+
     call draw_game
 
     mov dx, time_left
@@ -604,7 +610,9 @@ start_game proc
     call draw_dx
 
     @@no_timer:
+    call draw_set_boxes
     mov menu, 0
+
     pop dx
     pop bx
     ret
@@ -614,17 +622,24 @@ start_game endp
 ; loads 81 byte array into fields
 ; ax = offset to array
 load_array proc
+    push bx
     push di
+    push si
 
     xor di, di
+    mov si, ax
 
     @@copy_loop:
-    mov [fields+di], [dx+di]
+    mov bl, [si]
+    mov [fields+di], bl
 
     inc di
+    inc si
     cmp di, 81
     jl @@copy_loop
 
+    pop si
     pop di
+    pop bx
     ret
 load_array endp

@@ -67,18 +67,20 @@ keyboard_menu proc
     jmp @@return
 
     @@case_2:       ; start game with prepared grid 1
-    mov ax, easy_sudoku
+    mov ax, offset easy_sudoku
     call load_array
     call start_game
     jmp @@return
     
     @@case_3:       ; start game with prepared grid 2
-    call load_puzzle_2
+    mov ax, offset medium_sudoku
+    call load_array
     call start_game
     jmp @@return
 
     @@case_4:       ; start game with prepared grid 3
-    call load_puzzle_3
+    mov ax, offset hard_sudoku
+    call load_array
     call start_game
     jmp @@return
 
