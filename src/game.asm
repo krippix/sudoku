@@ -4,6 +4,7 @@ handle_game proc
     ret
 handle_game endp
 
+
 ; searches for collisions on last changed box
 find_collisions proc
     push ax
@@ -106,6 +107,7 @@ find_collisions_hor proc
     ret
 find_collisions_hor endp
 
+
 ; marks collisions in provided row
 ; ch = row to check for collisions
 ; RETURN:
@@ -172,6 +174,7 @@ find_collisions_vert proc
     pop ax
     ret
 find_collisions_vert endp
+
 
 ; takes cube number and determines collisions
 ; bl = cube
@@ -338,6 +341,7 @@ find_collisions_cube proc
     ret
 find_collisions_cube endp
 
+
 ; cube nr [0-8] and relative box nr (within box) [0-8] and returns next one
 ; bx = relative box nr
 ; cx = box nr
@@ -371,6 +375,7 @@ cube_next_box proc
     ret
 cube_next_box endp
 
+
 ; takes boxnumber and returns horizontal row number [0-8]
 ; bx = boxnumber
 ; RETURN:
@@ -394,6 +399,7 @@ box_to_row proc
     pop bx
     ret
 box_to_row endp
+
 
 ; determine cube nr from horizontal and vertical row
 ; formula: bl = ( ch // 3 ) * 3 + ( cl // 3)
@@ -428,6 +434,7 @@ rows_to_cube proc
     pop ax
     ret
 rows_to_cube endp
+
 
 ; Checks the entire sudoku for collisions again
 resolve_collisions proc
@@ -511,6 +518,7 @@ resolve_collisions proc
     ret
 resolve_collisions endp
 
+
 ; checks if game was won
 check_win_condition proc
     push ax
@@ -548,6 +556,23 @@ check_win_condition proc
     ret
 check_win_condition endp
 
+
+; sets every single box back to 0000 0000
+reset_data proc
+    push di
+    @@reset_loop:
+
+    mov [fields+di], 0
+
+    inc di
+    cmp di, 81
+    jl @@reset_loop
+
+    pop di
+    ret
+reset_data endp
+
+
 ; called if game is won
 game_won proc
     mov gameover, 1     ; disables all keyboard inputs but esc
@@ -555,9 +580,51 @@ game_won proc
     ret
 game_won endp
 
+
 ; called if game lost
 game_lost proc
     mov gameover, 1
     call draw_lose
     ret
 game_lost endp
+
+
+start_game proc
+    push bx
+    push dx 
+    call draw_game
+
+    mov dx, time_left
+
+    ; draw initial timer, if set
+    cmp dx, 0FFFFh
+    je @@no_timer
+    
+    mov bx, newline+1
+    call draw_dx
+
+    @@no_timer:
+    mov menu, 0
+    pop dx
+    pop bx
+    ret
+start_game endp
+
+
+; loads 81 byte array into fields
+; ax = offset to array
+load_array proc
+    push di
+
+    xor di, di
+
+    @@copy_loop:
+    mov [fields+di], [dx+di]
+
+    inc di
+    cmp di, 81
+    jl @@copy_loop
+
+    pop di
+    ret
+load_array endp

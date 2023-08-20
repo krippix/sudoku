@@ -33,20 +33,46 @@ prepare_int proc
     pop ax
     ret
 prepare_int endp
-
 ; called every 55ms as interrupt 1C around 18 times per second
 timer_int:
+    push ax
+    push dx
+    push ds
+
+    mov ax, @DATA
+    mov ds, ax
+
     cmp gameover, 1
     je @@return
+
+    cmp time_left, 0FFFFh
+    je @@return
+
+    cmp menu, 1
+    je @@return
+
+    ; return if buffer not "full"
+    inc time_buffer
+    cmp time_buffer, 18
+    jl @@return
+
+    mov time_buffer, 0 ; reset buffer
 
     dec time_left
     cmp time_left, 0
     jne @@draw
     call game_lost
+
     @@draw:
     mov dx, time_left
+    push bx
+    mov bx, newline+1
     call draw_dx
+    pop bx
 
     ; TODO? convert to minutes:seconds and display as such
     @@return:
+    pop ds
+    pop dx
+    pop ax
     iret

@@ -35,6 +35,7 @@ prep_video proc
     ret
 prep_video endp
 
+
 ; sets entire screen to white
 screen_white proc
     push ax
@@ -47,10 +48,14 @@ screen_white proc
     xor cx, cx
     xor dx, dx
 
+    call mouse_hide
+
     mov ah, 06h
     mov dx, 184Fh
     mov bh, 0fh   ; background color 
     int 10h
+
+    call mouse_show
 
     pop dx
     pop cx
@@ -58,6 +63,7 @@ screen_white proc
     pop ax
     ret
 screen_white endp
+
 
 ; draws games grid
 draw_grid proc
@@ -155,6 +161,7 @@ draw_grid proc
     ret
 draw_grid ENDP
 
+
 ; draws a 8x8 char from memory
 ; al = ascii symbol ; 30h = '0' ; 41h = 'A'
 ; bx = start pixel
@@ -202,6 +209,7 @@ draw_char proc
     ret
 draw_char endp
 
+
 ; draws the given byte using the following information:
 ; ah = byte to use
 ; bx = pixel to draw on
@@ -237,8 +245,10 @@ draw_byte proc
     ret
 draw_byte ENDP
 
+
 ; draws dx register to top left of the screen
 ; dx = data to display
+; bx = pixel to start at
 draw_dx proc
     push ax ; ascii symbol to draw <- result
     push bx ; current pixel
@@ -251,7 +261,6 @@ draw_dx proc
     mov cl, 12
     xor di, di
     mov si, 0F000h
-    mov bx, newline + 1
     mov currentColor, 8
 
     ; draw as hex
@@ -286,6 +295,7 @@ draw_dx proc
     pop ax
     ret
 draw_dx endp
+
 
 ; draws middle dot onto the canvas
 draw_middle proc
@@ -403,6 +413,7 @@ draw_box proc
     ret
 draw_box endp
 
+
 ; Simply draws a box from given origin coordinate
 ; bx = coordinate
 ; ah = color
@@ -435,6 +446,7 @@ draw_box_background proc
     ret
 draw_box_background endp
 
+
 draw_all_boxes proc
     push ax
     push cx
@@ -454,6 +466,7 @@ draw_all_boxes proc
     pop ax
     ret
 draw_all_boxes endp
+
 
 ; Calculates pixel from coordinate
 ; cx = x-coord
@@ -476,6 +489,7 @@ coord_to_pixel proc
     pop ax
     ret
 coord_to_pixel endp
+
 
 ; get coord from pixel
 ; ax = pixel
@@ -502,6 +516,7 @@ pixel_to_coord proc
     pop bx
     ret
 pixel_to_coord endp
+
 
 ; calculates box [0-81] from given pixel
 ; cx = x-coord
@@ -575,6 +590,7 @@ coord_to_box proc
     jmp @@return
 coord_to_box endp
 
+
 ; write to origin_x and _y
 set_origin_coord proc
     push ax
@@ -638,6 +654,45 @@ get_box_origin proc
     ret
 get_box_origin endp
 
+
+; draws array's ascii values byte for byte
+; color: uses current_color variable
+; 0FFh marks end of array! (sorry ÿ)
+; ax = offset to first byte
+; bx = starting pixel
+; RETURN:
+; nothing
+draw_array proc
+    push ax
+    push bx
+    push cx
+    push di
+
+    mov di, ax
+
+    mov cl, currentColor
+
+    @@draw_loop:
+    mov al, [di]
+
+    cmp al, 0FFh
+    je @@return
+    
+    call draw_char
+
+    add bx, 9
+    inc di
+    jmp @@draw_loop
+
+    @@return:
+    pop di
+    pop cx
+    pop bx
+    pop ax
+    ret
+draw_array endp
+
+
 ; Draws indicator showing that the game is won
 draw_win proc
     push ax
@@ -648,7 +703,6 @@ draw_win proc
     xor ax, ax
     xor di, di
 
-    mov cl, currentColor
     mov currentColor, 2     ; red color
     
     mov bx, 16*320+125
@@ -670,6 +724,7 @@ draw_win proc
     pop ax
     ret
 draw_win endp
+
 
 ; Draws indicator showing that the game was lost
 ; that implementation is ugly
@@ -710,3 +765,157 @@ draw_lose proc
     pop ax
     ret
 draw_lose endp
+
+
+draw_menu proc
+    push ax
+    push bx
+
+    ; clear screen
+    call screen_white
+
+    ; sudoku text
+    mov currentColor, 0
+    mov bx, 10*320+130
+    mov ax, offset str_sudoku
+    call draw_array
+
+    ; draw current timer
+    call draw_menu_timer
+    
+    ; esc
+    mov currentColor, 8
+    mov bx, 60*320+6+30
+    mov ax, offset str_esc
+    call draw_array
+
+    ; option 1
+    add bx, 15*320+18
+    mov ax, offset str_loadEmpty
+    call draw_array
+
+    ; option 2
+    add bx, 9*320
+    mov ax, offset str_loadEasy
+    call draw_array
+
+    ; option 3
+    add bx, 9*320
+    mov ax, offset str_loadMedium
+    call draw_array
+
+    ; option 4
+    add bx, 9*320
+    mov ax, offset str_loadHard
+    call draw_array
+
+    ; option 4
+    add bx, 9*320
+
+    ; option 6
+    add bx, 9*320
+    mov ax, offset str_timer15
+    call draw_array
+
+    ; option 7
+    add bx, 9*320
+    mov ax, offset str_timer300
+    call draw_array
+
+    ; option 8
+    add bx, 9*320
+    mov ax, offset str_timer900
+    call draw_array
+
+    ; option 9
+    add bx, 9*320
+    mov ax, offset str_timerNone
+    call draw_array
+    
+    pop bx
+    pop ax
+    ret
+draw_menu endp
+
+
+draw_menu_timer proc
+    push ax
+    push bx
+    push dx
+
+    mov bx, 27*320+6
+
+    mov currentColor, 8
+
+    mov ax, offset str_timer
+    call draw_array
+
+    add bx, 7*9
+
+    call draw_timer_background
+
+    cmp time_left, 0FFFFh
+    jne @@draw_dx
+    
+    add bx, 13
+    mov al, 2Dh      
+    call draw_char
+    jmp @@return
+
+    @@draw_dx:
+    mov dx, time_left
+    call draw_dx
+
+    @@return:
+    pop dx
+    pop bx
+    pop ax
+    ret
+draw_menu_timer endp
+
+
+; bx = start pixel
+draw_timer_background proc
+    push bx
+    push cx
+    push di
+
+    xor cx, cx
+    mov di, bx
+
+    mov bx, 27*320+6
+
+    @@draw_outer_loop: ; ch
+    
+    @@draw_inner_loop: ; cl
+    mov byte ptr es:[di], 0Fh
+
+    inc di
+    inc cl
+    cmp cl, 4*9
+    jl @@draw_inner_loop
+
+    add di, 320-4*9
+    xor cl, cl
+    inc ch
+    cmp ch, 9
+    jl @@draw_outer_loop
+
+    pop di
+    pop cx
+    pop bx
+    ret
+draw_timer_background endp
+
+draw_timer proc
+    ret
+draw_timer endp
+
+
+draw_game proc
+    call screen_white
+    call mouse_show
+    call set_origin_coord
+    call draw_grid
+    ret
+draw_game endp

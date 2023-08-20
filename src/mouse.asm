@@ -9,6 +9,7 @@ mouse_hide proc
     ret
 mouse_hide endp
 
+
 ; Shows mouse cursor
 mouse_show proc
     push ax
@@ -17,6 +18,7 @@ mouse_show proc
     pop ax
     ret
 mouse_show endp
+
 
 ; get mouse button press information
 ; RETURN:
@@ -42,6 +44,7 @@ get_mouse_press proc
     ret
 get_mouse_press endp
 
+
 ; Handles mouse inputs
 handle_mouse proc
     push ax
@@ -52,6 +55,9 @@ handle_mouse proc
 
     xor ax, ax
     xor di, di
+
+    cmp menu, 1
+    je @@return
 
     call get_mouse_press
     cmp bx, 0
@@ -92,7 +98,7 @@ handle_mouse proc
 
     mov cx, di
     call draw_box
-    
+
     ; Change active_box variable to new box (if it became active)
     mov cx, 00100000b
     and cx, ax
