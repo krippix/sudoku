@@ -6,3 +6,6 @@ uebungen/*
 *.OBJ
 *.MAP
 *.TR
+
+# LaTeX
+doc/

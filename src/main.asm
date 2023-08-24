@@ -40,8 +40,8 @@ str_timer900 db 38h, 3Ah, 20h, 53h, 65h, 74h, 20h, 74h, 69h, 6Dh, 65h, 72h, 20h,
 str_timerNone db 39h, 3Ah, 20h, 44h, 69h, 73h, 61h, 62h, 6Ch, 65h, 20h, 74h, 69h, 6Dh, 65h, 72h, 0FFh
 str_esc db 65h, 73h, 63h, 3Ah, 20h, 45h, 78h, 69h, 74h, 0FFh
 str_timer db 54h, 69h, 6Dh, 65h, 72h, 3Ah, 0FFh
-you_lose db 59h, 6Fh, 75h, 20h, 4Ch, 6Fh, 73h, 65h, 21h, 0FFh
-you_win  db 59h, 6Fh, 75h, 20h, 57h, 69h, 6Eh, 21h, 0FFh
+str_you_lose db 59h, 6Fh, 75h, 20h, 4Ch, 6Fh, 73h, 65h, 21h, 0FFh
+str_you_win  db 59h, 6Fh, 75h, 20h, 57h, 69h, 6Eh, 21h, 0FFh
 
 .CODE
     ORG 0100h

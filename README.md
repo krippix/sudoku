@@ -54,8 +54,8 @@ TODO: Show how you tested your software
 
 The Zip-File, named "surname_name.zip"
 
-- [ ] cover sheet
-- [ ] short manual
+- [x] cover sheet
+- [x] short manual
 - [ ] design sketch
 - [ ] test examples and/or procedures
 - [ ] assembler source-code and executable

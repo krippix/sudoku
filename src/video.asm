@@ -736,7 +736,7 @@ draw_win proc
     
     mov bx, 16*320+125
     @@draw_loop:
-    mov al, [you_win+di]
+    mov al, [str_you_win+di]
 
     call draw_char
 
@@ -776,7 +776,7 @@ draw_lose proc
     mov bx, 16*320+120
 
     @@draw_loop:
-    mov al, [you_lose+di]
+    mov al, [str_you_lose+di]
 
     call draw_char
 
