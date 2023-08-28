@@ -7,7 +7,7 @@ Assembly project written for my 4th Semester of my Computer Science Bachelors de
 ## Setup
 
 - requires DOSBox
-- requires TASM binaries
+- (compilation) requires TASM binaries
 
 ### Compilation
 
@@ -45,17 +45,3 @@ To run the software simply type `run` in the project root after compilation.
 | [`int 16h`](https://en.wikipedia.org/wiki/INT_16H)                      | Keyboard |
 | [`int 21h`](https://www.i8086.de/dos-int-21h/dos-int-21h.html)          | etc.     |
 | [`int 33h`](https://stanislavs.org/helppc/int_33.html)                  | Mouse    |
-
-### Tests
-
-TODO: Show how you tested your software
-
-## Files Required for Exam Submission
-
-The Zip-File, named "surname_name.zip"
-
-- [x] cover sheet
-- [x] short manual
-- [ ] design sketch
-- [ ] test examples and/or procedures
-- [ ] assembler source-code and executable
