@@ -31,6 +31,14 @@ To run the software simply type `run` in the project root after compilation.
 
 ## Dokumentation and Notes
 
+### Main Menu
+
+![main menu image](/docs/menu.png)
+
+### Game Interface
+
+![ingame image](/docs/game.png)
+
 ### Useful Links
 
 - [TASM user Guide](http://bitsavers.informatik.uni-stuttgart.de/pdf/borland/turbo_assembler/Turbo_Assembler_Version_5_Users_Guide.pdf)
